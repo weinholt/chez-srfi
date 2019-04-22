@@ -22,11 +22,15 @@
 ;; SOFTWARE.
 
 ;; Modified by Andreas Rottmann to be an R6RS program.
+;; Modified by Göran Weinholt to disable slow tests.
 
 (import (rnrs)
         (only (rnrs r5rs) modulo)
         (srfi :64 testing)
-        (srfi :45 lazy))
+        (srfi :45 lazy)
+        (srfi :98 os-environment-variables))
+
+(define disable-slow-tests (get-environment-variable "DISABLE_SLOW_TESTS"))
 
 (define-syntax test-output
   (syntax-rules ()
@@ -37,7 +41,7 @@
 (define-syntax test-leak
   (syntax-rules ()
     ((_ expr)
-     (begin
+     (unless disable-slow-tests
        (display "Leak test, please watch memory consumption; press C-c when satisfied.\n")
        (guard (c (#t 'aborted))
          expr)))))
@@ -230,9 +234,10 @@
   (force (stream-ref (stream-filter zero? (from 0))
                      0)))
 
-(let ()
-  (define s (stream-ref (from 0) 100000000))
-  (test-equal 100000000 (force s)))     ;==> bounded space
+(unless disable-slow-tests
+  (let ()
+    (define s (stream-ref (from 0) 100000000))
+    (test-equal 100000000 (force s))))     ;==> bounded space
 
 ;======================================================================
 ; Leak test 7: Infamous example from SRFI 40.
@@ -244,6 +249,7 @@
               3))
 
 (test-equal 21 (force (times3 7)))
-(test-equal 300000000 (force (times3 100000000)))    ;==> bounded space
+(unless disable-slow-tests
+  (test-equal 300000000 (force (times3 100000000))))    ;==> bounded space
 
 (test-end "lazy-tests")
