@@ -15,15 +15,16 @@ run_test()
     fi
 }
 
-for fn in tests/*.sps; do
-    case $fn in
-        *.*.sps)
-            ;;
-        *.sps)
-            run_test "$fn"
-            ;;
-    esac
-done
+run_test "tests/let.sps"
+# for fn in tests/*.sps; do
+#     case $fn in
+#         *.*.sps)
+#             ;;
+#         *.sps)
+#             run_test "$fn"
+#             ;;
+#     esac
+# done
 
 cat <<EOF
 These test suites ran successfully:
